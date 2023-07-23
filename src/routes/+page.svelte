@@ -30,7 +30,7 @@
 
 	function handleLogin() {
     isLoading = true;
-	let tiempoEspera = Math.floor(Math.random() * 10) + 3;
+	let tiempoEspera = Math.floor(Math.random() * 10) + 4;
     setTimeout(() => {
       isLoading = false;
 	  window.location.href = "/home";
