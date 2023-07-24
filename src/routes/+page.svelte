@@ -29,12 +29,17 @@
 	}
 
 	function handleLogin() {
+    if (password.value === '') {
+      alert('Ingrese su contraseña');
+      return;
+    } else{
     isLoading = true;
 	let tiempoEspera = Math.floor(Math.random() * 10) + 4;
     setTimeout(() => {
       isLoading = false;
 	  window.location.href = "/home";
     }, tiempoEspera*1000);
+  }
   }
 
 

@@ -1,3 +1,18 @@
+<script>
+	import account from './account.svelte';
+	import { onMount } from 'svelte';
+	let cuentas;
+	let shadowRoot;
+	onMount(() => {
+		shadowRoot = cuentas.attachShadow({ mode: "open" });
+	    const cuentasComponent = new account({
+            target: shadowRoot,
+            props: {
+                account: document.createElement('div') // Create a container for each account
+            }
+        });
+	});
+</script>
 <svelte:head>
 	<title>Home</title>
 	<meta name="Bienvenido" content="Home Page" />
@@ -15,16 +30,7 @@
 	<h1>Bienvenido</h1>
 	<div>
 		<h1>Mis Cuentas</h1>
-		<div class="accounts-container">
-		  <div class="account">
-			<h2>Cuenta Corriente</h2>
-			<p>Saldo: $1,500.00</p>
-		  </div>
-		  <div class="account">
-			<h2>Cuenta de Ahorro</h2>
-			<p>Saldo: $5,200.50</p>
-		  </div>
-		  <!-- Agregar más cuentas aquí -->
+		<div bind:this={cuentas} class="accounts-container">
 		</div>
 	
 		<div class="operations">
