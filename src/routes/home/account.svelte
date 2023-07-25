@@ -1,10 +1,9 @@
 <script>
-    import { afterUpdate, onMount } from 'svelte';
+    import { onMount } from 'svelte';
     let account;
     export let accounts;
     let shadowRoot;
-    afterUpdate(() => {
-      console.log("onMount");
+    onMount(() => {
         var numeroRandom = Math.floor(Math.random() * 1000) + 1000;
         shadowRoot = account.attachShadow({ mode: "open" });
 	    shadowRoot.innerHTML += `
