@@ -1,6 +1,7 @@
 <script>
 	import welcome from '$lib/images/svelte-welcome.webp';
 	import welcome_fallback from '$lib/images/svelte-welcome.png';
+  import { onMount } from 'svelte';
 	let isLoading = false;
   let main;
   let tarjeta = '';
@@ -151,6 +152,13 @@ text-align: center;
     //shadowRoot.innerHTML = estilo + htmlString;
      
   }
+
+
+  let cuentas;
+	let shadowRoot1;
+	onMount(() => {
+		console.log('onMount');
+	});
 
 </script>
 

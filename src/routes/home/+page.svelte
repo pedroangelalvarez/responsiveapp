@@ -1,6 +1,6 @@
 <script>
 	import account from './account.svelte';
-	import { onMount } from 'svelte';
+	import { beforeUpdate, afterUpdate, onMount } from 'svelte';
 	let cuentas;
 	let shadowRoot;
 	onMount(() => {
