@@ -2,8 +2,32 @@
 	import welcome from '$lib/images/svelte-welcome.webp';
 	import welcome_fallback from '$lib/images/svelte-welcome.png';
   import { onMount } from 'svelte';
+  import CameraModal from './CameraModal.svelte';
+  import Icon from '@iconify/svelte';
+  let successfoto;
+  function openCameraModal() {
+    const cameraModal = new CameraModal({
+      target: document.body,
+    });
+
+    cameraModal.$on("photoTaken", (event) => {
+      successfoto = true
+      console.log("Photo taken!", event.detail.photoDataUrl);
+      // Puedes hacer lo que desees con la foto capturada aquí
+      if (successfoto===true) {
+        
+          setTimeout(() => {
+            isLoading = false;
+          window.location.href = "/home";
+          }, 1000);
+        
+      }
+    });
+    
+  }
 	let isLoading = false;
   let main;
+  let buttonFacial;
   let tarjeta = '';
   let tarjetaNumeros = '';
 	let username = '';
@@ -113,7 +137,7 @@ text-align: center;
       htmlString += '</div>';
     }
     htmlString += '<div class="keyboard-row">';
-    htmlString += '<div class="key"> </div><div class="key">' + numbers[8] + '</div><div class="key">&lt;</div></div></div>';
+    htmlString += '<div class="key"> </div><div class="key">' + numbers[9] + '</div><div class="key">&lt;</div></div></div>';
 
     //Validate shadowRoot is null
     if (shadowRoot === undefined || shadowRoot === null) {
@@ -157,7 +181,7 @@ text-align: center;
   let cuentas;
 	let shadowRoot1;
 	onMount(() => {
-		console.log('onMount');
+    successfoto=false;
 	});
 
 </script>
@@ -196,6 +220,10 @@ text-align: center;
         <button type="submit" on:click={handleLogin}>Ingresar</button>
       </div>
     </form>
+    <button on:click={openCameraModal}>
+      <Icon icon="mingcute:face-line" />
+      Reconocimiento Facial
+    </button>
   </div>  
 </section>
 
@@ -278,6 +306,17 @@ text-align: center;
  }
 
   .form-group button {
+    width: 100%;
+    padding: 10px;
+    background-color: #4CAF50;
+    border: none;
+    color: #fff;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  button {
     width: 100%;
     padding: 10px;
     background-color: #4CAF50;
