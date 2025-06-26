@@ -42,11 +42,11 @@
 		<nav>
 			<ul>
 				<li><a href="/">Inicio</a></li>
-				<li><a href="/accounts">Mis Cuentas</a></li>
-				<li><a href="/transfers">Transferencias</a></li>
-				<li><a href="/payments">Pagos</a></li>
-				<li><a href="/settings">Configuración</a></li>
-				<li><a href="/help">Ayuda</a></li>
+				<li><a href="/">Mis Cuentas</a></li>
+				<li><a href="/">Transferencias</a></li>
+				<li><a href="/">Pagos</a></li>
+				<li><a href="/">Configuración</a></li>
+				<li><a hhref="/">Ayuda</a></li>
 				<li><a href="/">Salir</a></li>
 			</ul>
 		</nav>
