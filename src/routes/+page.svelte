@@ -35,6 +35,20 @@
   let dynamickeyboard;
 	const usernameId = "";
 	const passwordId = "";
+  let tipoTarjeta = '';
+
+  function detectarTipoTarjeta(numero) {
+    if (!numero) return '';
+    
+    // Eliminar espacios para la validación
+    const num = numero.replace(/\s/g, '');
+    
+    if (/^4/.test(num)) return 'visa';
+    if (/^5[1-5]/.test(num)) return 'mastercard';
+    if (/^3[47]/.test(num)) return 'amex';
+    return '';
+  }
+
   function formatearTarjeta() {
     // Eliminamos espacios en blanco y cualquier carácter que no sea un número
     tarjetaNumeros = tarjetaNumeros.replace(/\D/g, '');
@@ -47,6 +61,7 @@
     }
 
     tarjetaNumeros = tarjetaFormateada;
+    tipoTarjeta = detectarTipoTarjeta(tarjetaNumeros);
   }
 
 	function handleSubmit() {  
@@ -87,32 +102,17 @@
     var estilo = `
      <style>
       #keyboard {
-  display: none;
-  margin-top: 1px;
-  position: absolute;
-  right: 35%; 
-  left: 35%;
-text-align: center;
-  background-color: #fff;
-  border: 1px solid #ccc;
-}
-
-.keyboard-row {
-  display: flex;
-}
-
-.key {
-  flex: 1;
-  height: 40px;
-  width: 80px;
-  text-align: center;
-  border: 1px solid #ccc;
-  cursor: pointer;
-  line-height: 40px;
-}
-
-.delete {
-  flex: 2;
+  display: block;
+  width: 500px;
+  position: fixed;
+  left: 50%;
+  top: 100%;
+  transform: translate(-50%, -50%);
+  background: #2c3e50;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  z-index: 1000;
 }
 
 #overlay {
@@ -121,10 +121,48 @@ text-align: center;
   left: 0;
   width: 100%;
   height: 100%;
-  display: none;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 999;
 }
+
+.keyboard-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.key {
+  flex: 1;
+  min-width: 80px;
+  height: 60px;
+  background: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Arial', sans-serif;
+  font-size: 20px;
+  color: #2c3e50;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.key:hover {
+  background: #ecf0f1;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.delete {
+  background: #e74c3c;
+  color: white;
+}
+
+.delete:hover {
+  background: #c0392b;
+}
+
        </style>`;
 
     var htmlString = '<div id="keyboard" style="display: block;">';
@@ -195,25 +233,45 @@ text-align: center;
 	<div class="container">
     <h2>Inicio de Sesión</h2>
     <form id="login-form">
-      <div class="form-group">
-        <input bind:this={tarjeta} bind:value={tarjetaNumeros}
-        on:input={formatearTarjeta} placeholder="Tarjeta" type="text" id="tarjeta" name="tarjeta" required maxlength="19">
+      <div class="form-group card-input-wrapper">
+        <div class="form-group-row">
+          <div class="form-group">
+            <div class="card-input-group">
+              <input 
+                bind:this={tarjeta} 
+                bind:value={tarjetaNumeros}
+                on:input={formatearTarjeta} 
+                placeholder="Tarjeta" 
+                type="text" 
+                id="tarjeta" 
+                name="tarjeta" 
+                required 
+                maxlength="19"
+                class:skeleton={isLoading}
+                disabled={isLoading}
+              >
+              {#if tipoTarjeta}
+                <div class="card-logo {tipoTarjeta}"></div>
+              {/if}
+            </div>
+          </div>
+        </div>
       </div>
       <div class="form-group-row">
       <div class="form-group">
-        <select id="tipo_documento" name="tipo_documento" required>
+        <select id="tipo_documento" name="tipo_documento" required class:skeleton={isLoading} disabled={isLoading}>
           <option value="DNI">DNI</option>
           <option value="CE">CE</option>
           <option value="PAS">PAS</option>
         </select>
       </div>
       <div class="form-group">
-        <input placeholder="Documento" type="text" id="documento" name="documento" required>
+        <input placeholder="Documento" type="text" id="documento" name="documento" required class:skeleton={isLoading} disabled={isLoading}>
       </div>
     </div>
       <div class="form-group">
         <label for="password">Contraseña o PIN:</label>
-        <input bind:this={password}  readOnly="true" type="password" id="password" name="password" on:click={handleKeyboard} required>
+        <input bind:this={password}  readOnly="true" type="password" id="password" name="password" on:click={handleKeyboard} required class:skeleton={isLoading} disabled={isLoading}>
         <div id="dynamickeyboard" bind:this={dynamickeyboard}></div>
       </div>
       <div class="form-group">
@@ -228,110 +286,229 @@ text-align: center;
 </section>
 
 <style>
-	section {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		flex: 0.6;
-	}
-
-	.mainView{
-  position: fixed;
-  background: linear-gradient(45deg, #3b358f, #6288cf);
-  top: 0;
-  left: 0;
-  height:100%;
-  width:100%;
-  text-align: center;
-  animation: gradientAnimation 10s ease alternate infinite;
-}
-
-@keyframes gradientAnimation {
-  0% {
-    background-position: 0% 50%;
-  }
-  100% {
-    background-position: 100% 50%;
-  }
-}
-* {
-      font-family: Arial, sans-serif;
-    }
-
-    .container {
-      max-width: 400px;
-      margin: 0 auto;
-      padding: 20px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      background-color: #f9f9f9;
-    }
-
-    .container h2 {
-      text-align: center;
-    }
-
-    .form-group {
-      margin-bottom: 15px;
-  display: flex;
-  flex-direction: column;
-    }
-
-    .form-group label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-    }
-    .form-group-row {
-  display: flex;
-  gap: 10px; /* Adjust the gap between the two form groups */
-}
-
-.form-group-row .form-group {
-  flex: 1; /* Distribute available space equally to both form groups */
-}
-  .form-group input {
-   
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+  section {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex: 0.6;
   }
 
-  .form-group select {
-   
-   padding: 8px;
-   border: 1px solid #ccc;
-   border-radius: 4px;
- }
-
-  .form-group button {
+  .mainView {
+    position: fixed;
+    background: linear-gradient(135deg, #1a237e, #0d47a1);
+    top: 0;
+    left: 0;
+    height: 100%;
     width: 100%;
-    padding: 10px;
-    background-color: #4CAF50;
-    border: none;
-    color: #fff;
-    font-weight: bold;
-    border-radius: 4px;
-    cursor: pointer;
+    text-align: center;
+    animation: gradientAnimation 15s ease infinite;
+    background-size: 400% 400%;
   }
 
+  @keyframes gradientAnimation {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  * {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+
+  .container {
+    max-width: 400px;
+    margin: 2rem auto;
+    padding: 2rem;
+    border: none;
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+  }
+
+  .container h2 {
+    text-align: center;
+    color: #1a237e;
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+    font-weight: 600;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #424242;
+  }
+
+  .form-group-row {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .form-group-row .form-group {
+    flex: 1;
+  }
+
+  .form-group input,
+  .form-group select {
+    padding: 0.75rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus {
+    border-color: #1a237e;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(26, 35, 126, 0.1);
+  }
+
+  .form-group button,
   button {
     width: 100%;
-    padding: 10px;
-    background-color: #4CAF50;
+    padding: 0.875rem;
+    background-color: #1a237e;
     border: none;
     color: #fff;
-    font-weight: bold;
-    border-radius: 4px;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 8px;
     cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .form-group button:hover,
+  button:hover {
+    background-color: #0d47a1;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(26, 35, 126, 0.2);
+  }
+
+  .form-group button:active,
+  button:active {
+    transform: translateY(0);
   }
 
   @media (max-width: 480px) {
     .container {
       max-width: 100%;
-      margin: 0 auto;
-      padding: 10px;
+      margin: 1rem;
+      padding: 1.5rem;
+    }
+
+    .form-group-row {
+      flex-direction: column;
+      gap: 0.75rem;
     }
   }
+
+.card-input-wrapper {
+  width: 100%;
+  min-width: 400px; /* Nuevo */
+  max-width: 500px; /* Nuevo */
+  margin: 0 auto; /* Centrar contenedor */
+}
+
+.card-input-group {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: white;
+  border-radius: 8px;
+  padding: 0 15px;
+  border: 1px solid #e0e0e0;
+  min-width: 80%; /* Nuevo */
+  overflow: hidden; /* Nuevo */
+}
+
+/* Ajustar input para ocupar tamaño consistente */
+.card-input-group input {
+  flex: 1 1 auto;
+  min-width: 250px;
+  border: none;
+  outline: none;
+  font-size: 16px;
+}
+
+@media (max-width: 480px) {
+  .card-input-wrapper {
+    min-width: 100%;
+    max-width: 100%;
+  }
+  /* Mantener otro estilo móvil existente */
+}
+  
+
+/* Añadir este nuevo bloque */
+.card-input-group input:focus {
+  box-shadow: none;
+}
+
+.card-input-group:focus-within {
+  border-color: #e0e0e0; /* Mantener el color original */
+}
+.card-logo {
+  width: 60px;
+  height: 40px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  margin-left: auto;
+}
+
+@media (max-width: 480px) {
+  .card-input-group {
+    gap: 10px;
+    padding: 0 10px;
+  }
+  
+  .card-input-group input {
+    height: 45px;
+    width: 90%;
+    font-size: 15px;
+  }
+  
+  .card-logo {
+    width: 50px;
+    height: 35px;
+  }
+}
+
+.card-logo.visa {
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAwIDMyNCI+PHBhdGggZmlsbD0iIzE0MzRDQiIgZD0iTTY1MSAySDM5MmwtNTYgMjU5LTI1LTIxNmMtMyAyMi0zNyA0MC02OSA0MGwtMTM3IDEtMS0yaDIzN2wzNS0xNjMgNTUgMjg1IDg2LTI4NSAxMzQgMVYyeiIvPjwvc3ZnPg==');
+}
+
+.card-logo.mastercard {
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAwIDc4MCI+PGNpcmNsZSBmaWxsPSIjRUIwMDFCIiBjeD0iNDc1IiBjeT0iMzkwIiByPSIzNzAiLz48Y2lyY2xlIGZpbGw9IiNGNzlFMUIiIGN4PSI1MjUiIGN5PSIzOTAiIHI9IjM3MCIvPjwvc3ZnPg==');
+}
+
+.card-logo.amex {
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAwIDEwMDAiPjxwYXRoIGZpbGw9IiMyNjc3QkYiIGQ9Ik0wIDIzMGg1MDB2NTQwSDBWMjMweiIvPjwvc3ZnPg==');
+}
+
+.skeleton {
+    animation: skeleton-loading 1s linear infinite alternate;
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-color: hsl(200, 20%, 80%);
+    }
+    100% {
+        background-color: hsl(200, 20%, 95%);
+    }
+}
 </style>
