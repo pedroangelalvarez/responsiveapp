@@ -69,7 +69,7 @@
 	}
 
 	function handleLogin() {
-    if (password.value === '') {
+    if (password && password.value === '') {
       alert('Ingrese su contraseña');
       return;
     } else{
@@ -95,22 +95,26 @@
 
     return randomNumbers;
   }
+  /** @type {ShadowRoot | null} */
   let shadowRoot;
   function handleKeyboard(){
     var numbers = generateRandomNumbers();
-    password.value = "";
+    if (password) {
+      password.value = "";
+    }
     var estilo = `
-     <style>
+         <style>
       #keyboard {
   display: block;
-  width: 500px;
+  width: 90vw; /* Ancho relativo */
+  max-width: 400px; /* Ancho máximo */
   position: fixed;
   left: 50%;
-  top: 100%;
-  transform: translate(-50%, -50%);
+  bottom: 10px; /* Posicionado en la parte inferior */
+  transform: translateX(-50%); /* Solo centrado horizontalmente */
   background: #2c3e50;
   border-radius: 12px;
-  padding: 20px;
+  padding: 10px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.15);
   z-index: 1000;
 }
@@ -127,19 +131,20 @@
 
 .keyboard-row {
   display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 5px;
+  margin-bottom: 5px;
 }
 
 .key {
   flex: 1;
-  min-width: 80px;
-  height: 60px;
+  width: 11.4vw;
+  height: 10vw;
+  max-height: 40px;
   background: #ffffff;
   border: none;
   border-radius: 8px;
   font-family: 'Arial', sans-serif;
-  font-size: 20px;
+  font-size: clamp(14px, 4vw, 18px); /* Texto responsive */
   color: #2c3e50;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -178,39 +183,50 @@
     htmlString += '<div class="key"> </div><div class="key">' + numbers[9] + '</div><div class="key">&lt;</div></div></div>';
 
     //Validate shadowRoot is null
-    if (shadowRoot === undefined || shadowRoot === null) {
+    if ((shadowRoot === undefined || shadowRoot === null) && dynamickeyboard) {
       shadowRoot = dynamickeyboard.attachShadow({ mode: "open" });
     }
     const keyboardContainer = document.createElement('div');
     keyboardContainer.innerHTML = estilo + htmlString;
-    shadowRoot.appendChild(keyboardContainer);
+    if (shadowRoot) {
+      shadowRoot.appendChild(keyboardContainer);
+    }
 
     keyboardContainer.addEventListener('click', (event) => {
-      if (event.target.classList.contains('key')) {
-        const clickedKey = event.target.innerText;
+      const target = /** @type {HTMLElement} */ (event.target);
+      if (target && target.classList.contains('key')) {
+        const clickedKey = target.innerText;
         
         // Reflejar el valor de la tecla en el input fuera del Shadow DOM
-        const inputOutsideShadow = document.getElementById('password');
-        if (clickedKey === '<') {
-          inputOutsideShadow.value = inputOutsideShadow.value.slice(0, -1);
-          return;
-        }
-        inputOutsideShadow.value += clickedKey;
-        if (inputOutsideShadow.value.length === 6) {
-          //close shadowRoot
-          shadowRoot.innerHTML = "";
+        const inputOutsideShadow =  /** @type {HTMLInputElement | null} */ (document.getElementById('password'));
+        if (inputOutsideShadow) {
+          if (clickedKey === '<') {
+            inputOutsideShadow.value = inputOutsideShadow.value.slice(0, -1);
+            return;
+          }
+          inputOutsideShadow.value += clickedKey;
+          if (inputOutsideShadow.value.length === 6) {
+            //close shadowRoot
+            if (shadowRoot) {
+              shadowRoot.innerHTML = "";
+            }
+          }
         }
       }
     });
     // Capturar el evento blur (pérdida de enfoque) en keyboardContainer
-    main.addEventListener('click', (event) => {
-    // Verificar si el clic ocurrió dentro del teclado (Shadow DOM)
-      if (event.composedPath().includes(password) || event.composedPath().includes(shadowRoot)) {
-        // El clic ocurrió dentro del teclado, no hacemos nada.
-        return;
-      }
-      shadowRoot.innerHTML = '';
-    });
+    if(main){
+      main.addEventListener('click', (event) => {
+      // Verificar si el clic ocurrió dentro del teclado (Shadow DOM)
+        if (event.composedPath().includes(password) || (shadowRoot && event.composedPath().includes(shadowRoot))) {
+          // El clic ocurrió dentro del teclado, no hacemos nada.
+          return;
+        }
+        if (shadowRoot) {
+          shadowRoot.innerHTML = '';
+        }
+      });
+    }
     //shadowRoot.innerHTML = estilo + htmlString;
      
   }
@@ -286,6 +302,11 @@
 </section>
 
 <style>
+  /* Estilos para el teclado dinámico */
+  #dynamickeyboard {
+    position: relative;
+  }
+
   section {
     display: flex;
     flex-direction: column;
@@ -317,9 +338,10 @@
   }
 
   .container {
+    width: 90%;
     max-width: 400px;
-    margin: 2rem auto;
-    padding: 2rem;
+    margin: 1rem auto;
+    padding: 1.5rem;
     border: none;
     border-radius: 12px;
     background-color: rgba(255, 255, 255, 0.95);
